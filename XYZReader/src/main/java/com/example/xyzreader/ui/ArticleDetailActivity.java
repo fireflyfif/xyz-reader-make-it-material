@@ -1,5 +1,7 @@
 package com.example.xyzreader.ui;
 
+// COMPLETED: Add the support library for all Fragment and Loader's classes for backward compatibility
+import android.annotation.TargetApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
@@ -51,18 +53,19 @@ implements LoaderManager.LoaderCallbacks<Cursor> {
         getSupportLoaderManager().initLoader(0, null, this);
 
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
-        mPager = (ViewPager) findViewById(R.id.pager);
+        mPager = findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
         mPager.setPageMargin((int) TypedValue
                 .applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, getResources().getDisplayMetrics()));
         mPager.setPageMarginDrawable(new ColorDrawable(0x22000000));
 
-        mPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+        // COMPLETED: Remove the setOnPageChangeListener() which is now deprecated and set addOnPageChangeListener()
+        mPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
             @Override
-            public void onPageScrollStateChanged(int state) {
-                super.onPageScrollStateChanged(state);
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
                 mUpButton.animate()
-                        .alpha((state == ViewPager.SCROLL_STATE_IDLE) ? 1f : 0f)
+                        .alpha((position == ViewPager.SCROLL_STATE_IDLE) ? 1f : 0f)
                         .setDuration(300);
             }
 
@@ -73,6 +76,11 @@ implements LoaderManager.LoaderCallbacks<Cursor> {
                 }
                 mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
                 updateUpButtonPosition();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
             }
         });
 
@@ -88,6 +96,8 @@ implements LoaderManager.LoaderCallbacks<Cursor> {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             mUpButtonContainer.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
+                // COMPLETED: Target the KitKat version to escape the lint warning
+                @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
                 @Override
                 public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
                     view.onApplyWindowInsets(windowInsets);
@@ -152,6 +162,7 @@ implements LoaderManager.LoaderCallbacks<Cursor> {
     }
 
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
+
         public MyPagerAdapter(FragmentManager fm) {
             super(fm);
         }

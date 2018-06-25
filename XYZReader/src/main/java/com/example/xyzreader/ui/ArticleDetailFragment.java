@@ -1,6 +1,6 @@
 package com.example.xyzreader.ui;
 
-//import android.app.Fragment;
+// COMPLETED: Add the support library for all Fragment and Loader's classes for backward compatibility
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.content.Intent;
@@ -233,6 +233,8 @@ public class ArticleDetailFragment extends Fragment implements
 
             }
 
+            // COMPLETED: Shrink the long String to only 1000 characters
+            // TODO: Add a Read More text so that the user can expand to read the full artcle
             bodyView.setText(Html.fromHtml(mCursor
                     .getString(ArticleLoader.Query.BODY)
                     .substring(0, 1000)
@@ -301,6 +303,7 @@ public class ArticleDetailFragment extends Fragment implements
         bindViews();
     }
 
+    // TODO: Find out what this method does
     public int getUpButtonFloor() {
         if (mPhotoContainerView == null || mPhotoView.getHeight() == 0) {
             return Integer.MAX_VALUE;
