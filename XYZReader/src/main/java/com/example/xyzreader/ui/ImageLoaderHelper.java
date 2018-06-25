@@ -8,6 +8,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
+// COMPLETED: This method is no longer needed, because now we use Picasso for loading images
 public class ImageLoaderHelper {
     private static ImageLoaderHelper sInstance;
 

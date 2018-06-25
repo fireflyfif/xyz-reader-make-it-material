@@ -5,6 +5,9 @@ import android.util.AttributeSet;
 
 import com.android.volley.toolbox.NetworkImageView;
 
+// COMPLETED: This class is no longer in use
+// Replaced the DynamicHeightNetworkImageView with a simple ImageView,
+// because Picasso is used for loading images
 public class DynamicHeightNetworkImageView extends NetworkImageView {
     private float mAspectRatio = 1.5f;
 

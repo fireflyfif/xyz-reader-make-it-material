@@ -125,6 +125,8 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
         mScrollView = mRootView.findViewById(R.id.scrollview);
+
+        //TODO: Check if I need this method
         mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
             @Override
             public void onScrollChanged() {
@@ -140,6 +142,7 @@ public class ArticleDetailFragment extends Fragment implements
 
         mStatusBarColorDrawable = new ColorDrawable(0);
 
+        //TODO: Check if I need this method
         mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -155,6 +158,7 @@ public class ArticleDetailFragment extends Fragment implements
         return mRootView;
     }
 
+    //TODO: Check if I need this method
     private void updateStatusBar() {
         int color = 0;
         if (mPhotoView != null && mTopInset != 0 && mScrollY > 0) {
@@ -245,6 +249,7 @@ public class ArticleDetailFragment extends Fragment implements
 //                    .getString(ArticleLoader.Query.BODY)
 //                    .replaceAll("(\r\n|\n)", "<br />")));
 
+            //TODO: Check if I need this method
             ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
@@ -304,6 +309,7 @@ public class ArticleDetailFragment extends Fragment implements
     }
 
     // TODO: Find out what this method does
+    //TODO: Check if I need this method
     public int getUpButtonFloor() {
         if (mPhotoContainerView == null || mPhotoView.getHeight() == 0) {
             return Integer.MAX_VALUE;

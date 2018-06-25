@@ -1,6 +1,8 @@
 package com.example.xyzreader.ui;
 
 // COMPLETED: Add the support library for all Fragment and Loader's classes for backward compatibility
+import android.app.ActivityOptions;
+import android.net.Uri;
 import android.support.v4.app.LoaderManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -21,12 +23,14 @@ import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
 import com.example.xyzreader.data.UpdaterService;
+import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -71,6 +75,8 @@ public class ArticleListActivity extends AppCompatActivity implements
         if (savedInstanceState == null) {
             refresh();
         }
+
+
     }
 
     private void refresh() {
@@ -127,6 +133,10 @@ public class ArticleListActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(null);
     }
 
+
+    /**
+     * RecyclerView Adapter
+     */
     private class Adapter extends RecyclerView.Adapter<ViewHolder> {
         private Cursor mCursor;
 
@@ -185,10 +195,21 @@ public class ArticleListActivity extends AppCompatActivity implements
                         + "<br/>" + " by "
                         + mCursor.getString(ArticleLoader.Query.AUTHOR)));
             }
-            holder.thumbnailView.setImageUrl(
+
+            // COMPLETED: Add Picasso library for smoothly loading images from internet
+            Picasso.get()
+                    .load(Uri.parse(mCursor.getString(ArticleLoader.Query.THUMB_URL)))
+                    .placeholder(R.drawable.empty_detail)
+                    .error(R.drawable.empty_detail)
+                    .into(holder.thumbnailView);
+
+            Log.d(TAG, "Image url: " + mCursor.getString(ArticleLoader.Query.THUMB_URL));
+
+            /*holder.thumbnailView.setImageUrl(
                     mCursor.getString(ArticleLoader.Query.THUMB_URL),
-                    ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
-            holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
+                    ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());*/
+
+            //holder.thumbnailView.setAspectRatio(mCursor.getFloat(ArticleLoader.Query.ASPECT_RATIO));
         }
 
         @Override
@@ -198,7 +219,7 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        public DynamicHeightNetworkImageView thumbnailView;
+        public ImageView thumbnailView;
         public TextView titleView;
         public TextView subtitleView;
 
