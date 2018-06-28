@@ -161,6 +161,9 @@ implements LoaderManager.LoaderCallbacks<Cursor> {
         mUpButton.setTranslationY(Math.min(mSelectedItemUpButtonFloor - upButtonNormalBottom, 0));
     }
 
+    /**
+     * ViewPager Adapter Class
+     */
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
 
         public MyPagerAdapter(FragmentManager fm) {

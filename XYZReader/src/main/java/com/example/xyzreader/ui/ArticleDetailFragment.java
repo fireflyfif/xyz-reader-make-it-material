@@ -193,7 +193,7 @@ public class ArticleDetailFragment extends Fragment implements
             String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
             return dateFormat.parse(date);
         } catch (ParseException ex) {
-            Log.e(TAG, ex.getMessage());
+            Log.e(TAG, "Parse Exception: " + ex.getMessage());
             Log.i(TAG, "passing today's date");
             return new Date();
         }
