@@ -261,15 +261,15 @@ public class ArticleDetailFragment extends Fragment implements
                     .into(mPhotoView, new Callback() {
                         @Override
                         public void onSuccess() {
-                            if (getParentFragment() != null) {
-                                getParentFragment().startPostponedEnterTransition();
+                            if (getActivity() != null) {
+                                getActivity().supportStartPostponedEnterTransition();
                             }
                         }
 
                         @Override
                         public void onError(Exception e) {
-                            if (getParentFragment() != null) {
-                                getParentFragment().startPostponedEnterTransition();
+                            if (getActivity() != null) {
+                                getActivity().supportStartPostponedEnterTransition();
                             }
                         }
                     });

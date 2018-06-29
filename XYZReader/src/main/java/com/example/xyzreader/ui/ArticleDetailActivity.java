@@ -202,7 +202,6 @@ public class ArticleDetailActivity extends AppCompatActivity
      */
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
 
-
         public MyPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -256,7 +255,7 @@ public class ArticleDetailActivity extends AppCompatActivity
                         }
 
                         sharedElements.put(names.get(0),
-                                view.findViewById(R.id.thumbnail));
+                                view.findViewById(R.id.photo));
                     }
                 }
         );

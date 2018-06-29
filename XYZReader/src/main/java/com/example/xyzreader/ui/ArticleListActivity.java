@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.SharedElementCallback;
@@ -60,12 +61,15 @@ public class ArticleListActivity extends AppCompatActivity implements
 
         if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP) {
             prepareExitTransitions();
-            postponeEnterTransition();
+            //postponeEnterTransition();
         }
 
         setContentView(R.layout.activity_article_list);
 
-
+        if (savedInstanceState != null) {
+            currentPosition = savedInstanceState.getInt(KEY_CURRENT_POSITION, 0);
+            return;
+        }
 
 
         mToolbar = findViewById(R.id.toolbar);
@@ -81,6 +85,8 @@ public class ArticleListActivity extends AppCompatActivity implements
         if (savedInstanceState == null) {
             refresh();
         }
+
+
     }
 
     private void refresh() {
@@ -98,6 +104,12 @@ public class ArticleListActivity extends AppCompatActivity implements
     protected void onStop() {
         super.onStop();
         unregisterReceiver(mRefreshingReceiver);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_CURRENT_POSITION, currentPosition);
     }
 
     private boolean mIsRefreshing = false;
@@ -157,7 +169,7 @@ public class ArticleListActivity extends AppCompatActivity implements
                         public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
                             // TODO: Need to adjust that adapter's current position
                             RecyclerView.ViewHolder selectedViewHolder =
-                                    mRecyclerView.findViewHolderForAdapterPosition(0);
+                                    mRecyclerView.findViewHolderForAdapterPosition(currentPosition);
 
                             if (selectedViewHolder == null || selectedViewHolder.itemView == null) {
                                 return;
@@ -182,16 +194,17 @@ public class ArticleListActivity extends AppCompatActivity implements
                 public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
                     // TODO: Need to adjust that adapter's current position
                     RecyclerView.ViewHolder selectedViewHolder =
-                            mRecyclerView.findViewHolderForAdapterPosition(0);
+                            mRecyclerView.findViewHolderForAdapterPosition(currentPosition);
 
                     if (selectedViewHolder == null || selectedViewHolder.itemView == null) {
                         return;
-                    } else {
-                        // When transitioning back in, use the thumbnail at index the user had swiped
-                        // to in the pager activity
-                        sharedElements.put(names.get(0),
-                                selectedViewHolder.itemView.findViewById(R.id.thumbnail));
                     }
+
+                    // When transitioning back in, use the thumbnail at index the user had swiped
+                    // to in the pager activity
+                    sharedElements.put(names.get(0),
+                            selectedViewHolder.itemView.findViewById(R.id.thumbnail));
+
                 }
             };
 
