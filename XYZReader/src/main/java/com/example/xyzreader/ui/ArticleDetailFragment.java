@@ -34,6 +34,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
 /**
  * A fragment representing a single Article detail screen. This fragment is
@@ -216,7 +218,9 @@ public class ArticleDetailFragment extends Fragment implements
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
+
             titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+
             Date publishedDate = parsePublishedDate();
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
                 bylineView.setText(Html.fromHtml(
@@ -249,8 +253,29 @@ public class ArticleDetailFragment extends Fragment implements
 //                    .getString(ArticleLoader.Query.BODY)
 //                    .replaceAll("(\r\n|\n)", "<br />")));
 
+            // COMPLETED: Handle the image loading with Picasso instead of the ImageLoaderHelper
+            Picasso.get()
+                    .load(mCursor.getString(ArticleLoader.Query.PHOTO_URL))
+                    .placeholder(R.drawable.empty_detail)
+                    .error(R.drawable.empty_detail)
+                    .into(mPhotoView, new Callback() {
+                        @Override
+                        public void onSuccess() {
+                            if (getParentFragment() != null) {
+                                getParentFragment().startPostponedEnterTransition();
+                            }
+                        }
+
+                        @Override
+                        public void onError(Exception e) {
+                            if (getParentFragment() != null) {
+                                getParentFragment().startPostponedEnterTransition();
+                            }
+                        }
+                    });
+
             //TODO: Check if I need this method
-            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
+            /*ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
                     .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
                         @Override
                         public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
@@ -269,7 +294,7 @@ public class ArticleDetailFragment extends Fragment implements
                         public void onErrorResponse(VolleyError volleyError) {
 
                         }
-                    });
+                    });*/
         } else {
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");

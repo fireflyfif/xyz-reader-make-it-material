@@ -1,16 +1,21 @@
 package com.example.xyzreader.adapters;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.view.ViewCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.format.DateUtils;
+import android.transition.TransitionSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,14 +26,15 @@ import android.widget.TextView;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
-import com.example.xyzreader.ui.ArticleDetailActivity;
 import com.example.xyzreader.ui.ArticleListActivity;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 // COMPLETED: Created a separate Adapter class so that the code be decoupled
 // Help from this tutorial: http://innodroid.com/blog/post/a-complex-activity-transition-part-2
@@ -36,8 +42,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
 
     private static final String TAG = ArticlesAdapter.class.getSimpleName();
 
-    public static final String EXTRA_ARTICLE_ITEM = "article_image_url";
-    public static final String EXTRA_ARTICLE_IMAGE_TRANSITION = "article_transition_name";
+    public static final String TRANSITION_NAME  = "transition";
 
     public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
@@ -48,10 +53,28 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
     private Cursor mCursor;
     private Context mContext;
 
+    /**
+     * COMPLETED: Add a listener that is attached to all ViewHolders to handle image loading events and clicks
+     */
+    private interface ViewHolderListener {
+
+        void onLoadCompleted(ImageView imageView, int adapterPosition);
+
+        void onItemClicked(View view, int adapterPosition);
+    }
+
+    // COMPLETED: Added those too
+    private final Picasso mRequestManager;
+    private final ViewHolderListener mViewHolderListener;
+
 
     public ArticlesAdapter(Context context, Cursor cursor) {
         mContext = context;
         mCursor = cursor;
+
+        // COMPLETED: Added
+        mRequestManager = Picasso.get();
+        mViewHolderListener = new ViewHolderListenerImplementation((AppCompatActivity) context);
     }
 
     @Override
@@ -81,7 +104,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
     }
 
     @Override
-    public void onBindViewHolder(@NonNull  ArticlesViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final ArticlesViewHolder holder, final int position) {
 
         mCursor.moveToPosition(position);
         holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
@@ -109,7 +132,18 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
                 .load(Uri.parse(mCursor.getString(ArticleLoader.Query.THUMB_URL)))
                 .placeholder(R.drawable.empty_detail)
                 .error(R.drawable.empty_detail)
-                .into(holder.thumbnailView);
+                .into(holder.thumbnailView, new Callback() {
+                    @Override
+                    public void onSuccess() {
+                       mViewHolderListener.onLoadCompleted(holder.thumbnailView, position);
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+
+                        mViewHolderListener.onLoadCompleted(holder.thumbnailView, position);
+                    }
+                });
 
         Log.d(TAG, "Image url: " + mCursor.getString(ArticleLoader.Query.THUMB_URL));
     }
@@ -121,23 +155,82 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
     }
 
     // COMPLETED: Moved the Intent to this method
-    private void showViewPagerActivity(View view, int position) {
+    private void showViewPagerActivity(int position, ImageView thumbnail) {
         Uri itemIdUri = ItemsContract.Items.buildItemUri(getItemId(position));
 
         Intent intent = new Intent(Intent.ACTION_VIEW, itemIdUri);
-        intent.putExtra(EXTRA_ARTICLE_ITEM, position);
+        intent.putExtra(TRANSITION_NAME, ViewCompat.getTransitionName(thumbnail));
 
         Activity activity = (Activity) mContext;
         ActivityOptionsCompat options = ActivityOptionsCompat
-                .makeSceneTransitionAnimation(activity, view, EXTRA_ARTICLE_ITEM);
+                .makeSceneTransitionAnimation(
+                        activity,
+                        thumbnail,
+                        ViewCompat.getTransitionName(thumbnail));
+
         ActivityCompat.startActivity(activity, intent, options.toBundle());
     }
 
-    public class ArticlesViewHolder extends RecyclerView.ViewHolder {
+    /**
+     * Default {@Link ViewHolderListener} implementation
+     * source: https://github.com/google/android-transition-examples/blob/master/GridToPager/app/src/main/java/com/google/samples/gridtopager/adapter/GridAdapter.java
+     */
+    private class ViewHolderListenerImplementation implements ViewHolderListener {
+
+        private AppCompatActivity mActivity;
+        private AtomicBoolean mEnterTransitionStarted;
+
+        ViewHolderListenerImplementation(AppCompatActivity activity) {
+            mActivity = activity;
+            mEnterTransitionStarted = new AtomicBoolean();
+        }
+
+
+        @Override
+        public void onLoadCompleted(ImageView imageView, int adapterPosition) {
+            // Call startPostponedEnterTransition only when the 'selected' image loading is completed.
+            if (ArticleListActivity.currentPosition != adapterPosition) {
+                return;
+            }
+
+            if (mEnterTransitionStarted.getAndSet(true)) {
+                return;
+            }
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                mActivity.startPostponedEnterTransition();
+
+            }
+
+        }
+
+        @Override
+        public void onItemClicked(View view, int adapterPosition) {
+            // Update the position
+            ArticleListActivity.currentPosition = adapterPosition;
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                // Hold that for now
+                //((TransitionSet) mActivity.getExitTransition()).excludeTarget(view, true);
+
+            }
+
+            ImageView transitioningView = view.findViewById(R.id.thumbnail);
+
+            // TODO: Not sure if this will work
+            showViewPagerActivity(adapterPosition, transitioningView);
+
+        }
+    }
+
+    public class ArticlesViewHolder extends RecyclerView.ViewHolder implements
+            View.OnClickListener{
 
         private ImageView thumbnailView;
         private TextView titleView;
         private TextView subtitleView;
+
+        private ViewHolderListener viewHolderListener;
 
         private ArticlesViewHolder(View itemView) {
             super(itemView);
@@ -146,14 +239,15 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
             titleView = itemView.findViewById(R.id.article_title);
             subtitleView = itemView.findViewById(R.id.article_subtitle);
 
-            itemView.setOnClickListener(ClickItemListener);
+            viewHolderListener = mViewHolderListener;
+
+            itemView.setOnClickListener(this);
         }
 
-        private View.OnClickListener ClickItemListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showViewPagerActivity(v, getLayoutPosition());
-            }
-        };
+        @Override
+        public void onClick(View v) {
+            viewHolderListener.onItemClicked(v, getAdapterPosition());
+
+        }
     }
 }
