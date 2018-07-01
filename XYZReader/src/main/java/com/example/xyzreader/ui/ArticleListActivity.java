@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.SharedElementCallback;
@@ -43,7 +44,8 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private static final String TAG = ArticleListActivity.class.getSimpleName();
 
-    // TODO: Save this position on SavedInstanceState
+    // COMPLETED: Save this position on SavedInstanceState
+    // Holds the current item position to be shared between the grid Layout and the Pager Activity
     public static int currentPosition;
     private static final String KEY_CURRENT_POSITION = "current_position";
 
@@ -66,10 +68,12 @@ public class ArticleListActivity extends AppCompatActivity implements
         }
 
         mToolbar = findViewById(R.id.toolbar);
-
-        final View toolbarContainerView = findViewById(R.id.toolbar_container);
+        setSupportActionBar(mToolbar);
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        // COMPLETED: Call the refresh listener here
+        swipeToRefresh();
+
         mRecyclerView = findViewById(R.id.recycler_view);
 
         getSupportLoaderManager().initLoader(0, null, this);
@@ -86,6 +90,18 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private void refresh() {
         startService(new Intent(this, UpdaterService.class));
+    }
+
+    /**
+     * COMPLETED: Set a listener to the Swipe Refresh Layout
+     */
+    private void swipeToRefresh() {
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh();
+            }
+        });
     }
 
     @Override
@@ -123,13 +139,14 @@ public class ArticleListActivity extends AppCompatActivity implements
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
     }
 
+    @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         return ArticleLoader.newAllArticlesInstance(this);
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+    public void onLoadFinished(@NonNull Loader<Cursor> cursorLoader, Cursor cursor) {
         mArticlesAdapter = new ArticlesAdapter(this, cursor);
         mArticlesAdapter.setHasStableIds(true);
         mRecyclerView.setAdapter(mArticlesAdapter);
@@ -142,7 +159,7 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         mRecyclerView.setAdapter(null);
     }
 
