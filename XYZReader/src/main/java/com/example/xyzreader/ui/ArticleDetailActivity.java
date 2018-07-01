@@ -41,7 +41,6 @@ import java.util.Map;
 public class ArticleDetailActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    public static final String TRANSITION_NAME  = "transition";
 
     private Cursor mCursor;
     private long mStartId;
@@ -65,12 +64,12 @@ public class ArticleDetailActivity extends AppCompatActivity
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
         }
 
-        setContentView(R.layout.activity_article_detail);
-
         // COMPLETED: First postpone the enter transition, then set it
-        //supportPostponeEnterTransition();
+        supportPostponeEnterTransition();
         ActivityCompat.postponeEnterTransition(this);
         //ActivityCompat.setEnterSharedElementCallback(this, enterTransitionCallback);
+
+        setContentView(R.layout.activity_article_detail);
 
         getSupportLoaderManager().initLoader(0, null, this);
 
@@ -113,25 +112,16 @@ public class ArticleDetailActivity extends AppCompatActivity
         mUpButtonContainer = findViewById(R.id.up_container);
 
         mUpButton = findViewById(R.id.action_up);
-        mUpButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onSupportNavigateUp();
-            }
-        });
+        mUpButton.setOnClickListener(view -> onSupportNavigateUp());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mUpButtonContainer.setOnApplyWindowInsetsListener(new View.OnApplyWindowInsetsListener() {
-                // COMPLETED: Target the KitKat version to escape the lint warning
-                @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
-                @Override
-                public WindowInsets onApplyWindowInsets(View view, WindowInsets windowInsets) {
-                    view.onApplyWindowInsets(windowInsets);
-                    mTopInset = windowInsets.getSystemWindowInsetTop();
-                    mUpButtonContainer.setTranslationY(mTopInset);
-                    updateUpButtonPosition();
-                    return windowInsets;
-                }
+            // COMPLETED: Target the KitKat version to escape the lint warning
+            mUpButtonContainer.setOnApplyWindowInsetsListener((view, windowInsets) -> {
+                view.onApplyWindowInsets(windowInsets);
+                mTopInset = windowInsets.getSystemWindowInsetTop();
+                mUpButtonContainer.setTranslationY(mTopInset);
+                updateUpButtonPosition();
+                return windowInsets;
             });
 
         }
@@ -146,10 +136,7 @@ public class ArticleDetailActivity extends AppCompatActivity
             }
 
             // COMPLETED: Avoid a postponeEnterTransition on orientation change
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                postponeEnterTransition();
-            }
-
+            ActivityCompat.postponeEnterTransition(this);
         }
     }
 
@@ -219,7 +206,10 @@ public class ArticleDetailActivity extends AppCompatActivity
         @Override
         public Fragment getItem(int position) {
             mCursor.moveToPosition(position);
-            return ArticleDetailFragment.newInstance(mCursor.getLong(ArticleLoader.Query._ID));
+            long cursorId = mCursor.getLong(ArticleLoader.Query._ID);
+            String articleName = mCursor.getString(ArticleLoader.Query.TITLE);
+
+            return ArticleDetailFragment.newInstance(cursorId, articleName);
         }
 
         @Override
@@ -262,18 +252,10 @@ public class ArticleDetailActivity extends AppCompatActivity
 
     }
 
-    // TODO: Currently not in use
-    private void scheduleStartPostponedTransition(final View sharedElement) {
-        sharedElement.getViewTreeObserver().addOnPreDrawListener(
-                new ViewTreeObserver.OnPreDrawListener() {
-                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-                    @Override
-                    public boolean onPreDraw() {
-                        sharedElement.getViewTreeObserver().removeOnPreDrawListener(this);
-                        startPostponedEnterTransition();
-                        return true;
-                    }
-                }
-        );
+    // COMPLETED: Finish the transition
+    @Override
+    public void supportFinishAfterTransition() {
+        setResult(RESULT_OK);
+        super.supportFinishAfterTransition();
     }
 }

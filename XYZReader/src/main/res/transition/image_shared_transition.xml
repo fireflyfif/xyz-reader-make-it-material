@@ -4,4 +4,7 @@
     android:interpolator="@android:interpolator/fast_out_slow_in"
     android:transitionOrdering="together">
 
+    <changeClipBounds/>
+    <changeTransform/>
+    <changeBounds/>
 </transitionSet>

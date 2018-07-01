@@ -166,7 +166,8 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
                 .makeSceneTransitionAnimation(
                         activity,
                         thumbnail,
-                        ViewCompat.getTransitionName(thumbnail));
+                        //ViewCompat.getTransitionName(thumbnail)
+                        TRANSITION_NAME);
 
         ActivityCompat.startActivity(activity, intent, options.toBundle());
     }
@@ -209,13 +210,9 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
             // Update the position
             ArticleListActivity.currentPosition = adapterPosition;
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                // Hold that for now
-                //((TransitionSet) mActivity.getExitTransition()).excludeTarget(view, true);
-
-            }
-
             ImageView transitioningView = view.findViewById(R.id.thumbnail);
+
+            Log.d(TAG, "Current position at: " + ArticleListActivity.currentPosition);
 
             // TODO: Not sure if this will work
             showViewPagerActivity(adapterPosition, transitioningView);

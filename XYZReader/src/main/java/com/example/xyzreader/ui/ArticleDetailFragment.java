@@ -1,6 +1,7 @@
 package com.example.xyzreader.ui;
 
 // COMPLETED: Add the support library for all Fragment and Loader's classes for backward compatibility
+import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.content.Intent;
@@ -44,7 +45,10 @@ import com.squareup.picasso.Picasso;
  */
 public class ArticleDetailFragment extends Fragment implements
         LoaderManager.LoaderCallbacks<Cursor> {
+
     private static final String TAG = "ArticleDetailFragment";
+
+    public static final String TRANSITION_NAME  = "transition";
 
     public static final String ARG_ITEM_ID = "item_id";
     private static final float PARALLAX_FACTOR = 1.25f;
@@ -77,9 +81,10 @@ public class ArticleDetailFragment extends Fragment implements
     public ArticleDetailFragment() {
     }
 
-    public static ArticleDetailFragment newInstance(long itemId) {
+    public static ArticleDetailFragment newInstance(long itemId, String transitionName) {
         Bundle arguments = new Bundle();
         arguments.putLong(ARG_ITEM_ID, itemId);
+        arguments.putString(TRANSITION_NAME, transitionName);
         ArticleDetailFragment fragment = new ArticleDetailFragment();
         fragment.setArguments(arguments);
         return fragment;
@@ -91,6 +96,10 @@ public class ArticleDetailFragment extends Fragment implements
 
         if (getArguments().containsKey(ARG_ITEM_ID)) {
             mItemId = getArguments().getLong(ARG_ITEM_ID);
+        }
+
+        if (getArguments().containsKey(TRANSITION_NAME)) {
+            String transition = getArguments().getString(TRANSITION_NAME);
         }
 
         mIsCard = getResources().getBoolean(R.bool.detail_is_card);
@@ -254,6 +263,9 @@ public class ArticleDetailFragment extends Fragment implements
 //                    .replaceAll("(\r\n|\n)", "<br />")));
 
             // COMPLETED: Handle the image loading with Picasso instead of the ImageLoaderHelper
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mPhotoView.setTransitionName(titleView.getText().toString());
+            }
             Picasso.get()
                     .load(mCursor.getString(ArticleLoader.Query.PHOTO_URL))
                     .placeholder(R.drawable.empty_detail)

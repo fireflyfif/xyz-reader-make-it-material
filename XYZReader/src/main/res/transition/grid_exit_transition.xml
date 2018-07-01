@@ -4,9 +4,12 @@
     android:interpolator="@android:interpolator/fast_out_slow_in"
     android:startDelay="25">
 
+    <changeBounds/>
+
     <fade>
         <targets android:targetId="@id/card_view"/>
     </fade>
 
+    <changeImageTransform android:startDelay="@android:integer/config_mediumAnimTime"/>
 
 </transitionSet>

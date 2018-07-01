@@ -19,6 +19,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.transition.TransitionInflater;
+import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 
@@ -54,39 +56,32 @@ public class ArticleListActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // COMPLETED: Set the Exit Shared Element with the callback
-        // It should be added before adding content!!!
-        //ActivityCompat.setExitSharedElementCallback(this, exitTransitionCallback);
-        //ActivityCompat.startPostponedEnterTransition(this);
-
-        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP) {
-            prepareExitTransitions();
-            //postponeEnterTransition();
-        }
 
         setContentView(R.layout.activity_article_list);
 
-        if (savedInstanceState != null) {
-            currentPosition = savedInstanceState.getInt(KEY_CURRENT_POSITION, 0);
-            return;
+        // COMPLETED: Set the Exit Shared Element with the callback
+        // It should be added before adding content!!!
+        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP) {
+            prepareExitTransitions();
         }
-
 
         mToolbar = findViewById(R.id.toolbar);
 
         final View toolbarContainerView = findViewById(R.id.toolbar_container);
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
-
         mRecyclerView = findViewById(R.id.recycler_view);
 
         getSupportLoaderManager().initLoader(0, null, this);
 
         if (savedInstanceState == null) {
             refresh();
+        } else {
+            // Save the current position upon rotation
+            currentPosition = savedInstanceState.getInt(KEY_CURRENT_POSITION, 0);
         }
 
-
+        Log.d(TAG, "Current position clicked: " + currentPosition);
     }
 
     private void refresh() {
@@ -140,7 +135,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(mArticlesAdapter);
         int columnCount = getResources().getInteger(R.integer.list_column_count);
 
-        // TODO: Decide if I will use this layout manager
         StaggeredGridLayoutManager sglm =
                 new StaggeredGridLayoutManager(columnCount, StaggeredGridLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(sglm);
@@ -158,10 +152,6 @@ public class ArticleListActivity extends AppCompatActivity implements
      * source: https://android-developers.googleblog.com/2018/02/continuous-shared-element-transitions.html
      */
     private void prepareExitTransitions() {
-        if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().requestFeature(Window.FEATURE_CONTENT_TRANSITIONS);
-            getWindow().setExitTransition(TransitionInflater.from(this)
-                    .inflateTransition(R.transition.grid_exit_transition));
 
             setExitSharedElementCallback(
                     new SharedElementCallback() {
@@ -179,33 +169,36 @@ public class ArticleListActivity extends AppCompatActivity implements
                             // to in the pager activity
                             sharedElements.put(names.get(0),
                                     selectedViewHolder.itemView.findViewById(R.id.thumbnail));
-
                         }
                     }
             );
-        }
-
     }
 
-    // TODO: Remove if I don't need it
-    private final SharedElementCallback exitTransitionCallback =
-            new SharedElementCallback() {
-                @Override
-                public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
-                    // TODO: Need to adjust that adapter's current position
-                    RecyclerView.ViewHolder selectedViewHolder =
-                            mRecyclerView.findViewHolderForAdapterPosition(currentPosition);
+    /**
+     * Scrolls the recycler view to show the last viewed item in the grid. This is important when
+     * navigating back from the grid.
+     * source: https://android-developers.googleblog.com/2018/02/continuous-shared-element-transitions.html
+     *
+     * TODO: Currently not in use, the viewAtPosition produces null pointer exception
+     */
+    private void scrollToPosition() {
+        mRecyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                mRecyclerView.removeOnLayoutChangeListener(this);
+                final RecyclerView.LayoutManager layoutManager = mRecyclerView.getLayoutManager();
 
-                    if (selectedViewHolder == null || selectedViewHolder.itemView == null) {
-                        return;
+                View viewAtPosition;
+                if (currentPosition != 0) {
+                    viewAtPosition = layoutManager.findViewByPosition(currentPosition);
+
+                    if (viewAtPosition == null || layoutManager
+                            .isViewPartiallyVisible(viewAtPosition, false, true)) {
+                        mRecyclerView.post(() -> layoutManager.scrollToPosition(currentPosition));
                     }
-
-                    // When transitioning back in, use the thumbnail at index the user had swiped
-                    // to in the pager activity
-                    sharedElements.put(names.get(0),
-                            selectedViewHolder.itemView.findViewById(R.id.thumbnail));
-
                 }
-            };
+            }
+        });
+    }
 
 }
