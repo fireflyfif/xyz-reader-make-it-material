@@ -5,6 +5,8 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -12,6 +14,8 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Palette;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.format.DateUtils;
@@ -36,13 +40,13 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-// COMPLETED: Created a separate Adapter class so that the code be decoupled
+// COMPLETED: Created a separate Adapter class so that the code be more readable
 // Help from this tutorial: http://innodroid.com/blog/post/a-complex-activity-transition-part-2
 public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.ArticlesViewHolder> {
 
     private static final String TAG = ArticlesAdapter.class.getSimpleName();
 
-    public static final String TRANSITION_NAME  = "transition";
+    public static final String TRANSITION_NAME = "transition";
 
     public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
@@ -119,8 +123,8 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
                             DateUtils.FORMAT_ABBREV_ALL).toString()
                             + "<br/>" + " by "
                             + mCursor.getString(ArticleLoader.Query.AUTHOR)));
-        } else {
 
+        } else {
             holder.subtitleView.setText(Html.fromHtml(
                     outputFormat.format(publishedDate)
                             + "<br/>" + " by "
@@ -136,6 +140,17 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
                     @Override
                     public void onSuccess() {
                        mViewHolderListener.onLoadCompleted(holder.thumbnailView, position);
+
+                       // COMPLETED: Generate background color on each item's card view from the grid
+                       Bitmap bitmap = ((BitmapDrawable)
+                                holder.thumbnailView.getDrawable()).getBitmap();
+                       holder.thumbnailView.setImageBitmap(bitmap);
+
+                       Palette palette = Palette.from(bitmap).generate();
+                       int generatedColor = palette.getMutedColor(0x000000);
+
+                       holder.cardView.setCardBackgroundColor(generatedColor);
+
                     }
 
                     @Override
@@ -214,9 +229,8 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
 
             Log.d(TAG, "Current position at: " + ArticleListActivity.currentPosition);
 
-            // TODO: Not sure if this will work
+            // COMPLETED: Call the Intent with the options method
             showViewPagerActivity(adapterPosition, transitioningView);
-
         }
     }
 
@@ -226,6 +240,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
         private ImageView thumbnailView;
         private TextView titleView;
         private TextView subtitleView;
+        private CardView cardView;
 
         private ViewHolderListener viewHolderListener;
 
@@ -235,6 +250,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
             thumbnailView = itemView.findViewById(R.id.thumbnail);
             titleView = itemView.findViewById(R.id.article_title);
             subtitleView = itemView.findViewById(R.id.article_subtitle);
+            cardView = itemView.findViewById(R.id.card_view);
 
             viewHolderListener = mViewHolderListener;
 
