@@ -46,13 +46,16 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
 
     private static final String TAG = ArticlesAdapter.class.getSimpleName();
 
-    public static final String TRANSITION_NAME = "transition";
+    private static final String TRANSITION_NAME = "transition";
+    private static final String PHOTO_URL_EXTRA = "photo_url";
 
-    public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
+    private int mMutedColor = 0xFF333333;
+
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
-    public SimpleDateFormat outputFormat = new SimpleDateFormat();
+    private SimpleDateFormat outputFormat = new SimpleDateFormat();
     // Most time functions can only handle 1902 - 2037
-    public GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
+    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
 
     private Cursor mCursor;
     private Context mContext;
@@ -147,19 +150,21 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
                        holder.thumbnailView.setImageBitmap(bitmap);
 
                        Palette palette = Palette.from(bitmap).generate();
-                       int generatedColor = palette.getMutedColor(0x000000);
+                       int generatedColor = palette.getMutedColor(mMutedColor);
 
                        holder.cardView.setCardBackgroundColor(generatedColor);
-
                     }
 
                     @Override
                     public void onError(Exception e) {
-
                         mViewHolderListener.onLoadCompleted(holder.thumbnailView, position);
                     }
                 });
 
+        ViewCompat.setTransitionName(holder.thumbnailView,
+                TRANSITION_NAME + holder.getAdapterPosition());
+
+        Log.d(TAG, "Transition name: " + TRANSITION_NAME + holder.getAdapterPosition());
         Log.d(TAG, "Image url: " + mCursor.getString(ArticleLoader.Query.THUMB_URL));
     }
 
@@ -172,19 +177,23 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
     // COMPLETED: Moved the Intent to this method
     private void showViewPagerActivity(int position, ImageView thumbnail) {
         Uri itemIdUri = ItemsContract.Items.buildItemUri(getItemId(position));
+        String photoUrl = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
+        Log.d(TAG, "Photo url: " + photoUrl);
 
         Intent intent = new Intent(Intent.ACTION_VIEW, itemIdUri);
         intent.putExtra(TRANSITION_NAME, ViewCompat.getTransitionName(thumbnail));
+        intent.putExtra(ArticleListActivity.KEY_CURRENT_POSITION, ArticleListActivity.currentPosition);
+        intent.putExtra(PHOTO_URL_EXTRA, photoUrl);
 
         Activity activity = (Activity) mContext;
         ActivityOptionsCompat options = ActivityOptionsCompat
                 .makeSceneTransitionAnimation(
                         activity,
                         thumbnail,
-                        //ViewCompat.getTransitionName(thumbnail)
-                        TRANSITION_NAME);
+                        ViewCompat.getTransitionName(thumbnail));
 
         ActivityCompat.startActivity(activity, intent, options.toBundle());
+        //activity.startActivity(intent);
     }
 
     /**
@@ -215,9 +224,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 mActivity.startPostponedEnterTransition();
-
             }
-
         }
 
         @Override

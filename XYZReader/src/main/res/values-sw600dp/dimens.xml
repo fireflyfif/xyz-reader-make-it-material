@@ -4,5 +4,7 @@
     <dimen name="detail_body_text_size">20sp</dimen>
     <item name="detail_body_line_spacing_multiplier" format="float" type="fraction">1.3</item>
     <dimen name="fab_margin">24dp</dimen>
-    <dimen name="photo_height">300dp</dimen>
+    <dimen name="photo_height">400dp</dimen>
+    <dimen name="overlapTop_layout">120dp</dimen>
+    <dimen name="logo_padding">16dp</dimen>
 </resources>

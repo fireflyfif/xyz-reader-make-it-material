@@ -21,7 +21,6 @@
             COMPLETED: Replace DynamicHeightNetworkImageView with ImageView -->
         <ImageView
             android:id="@+id/thumbnail"
-            android:transitionName="@string/transition_image"
             android:scaleType="centerCrop"
             android:layout_width="match_parent"
             android:layout_height="100dp"

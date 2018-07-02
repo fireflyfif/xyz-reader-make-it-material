@@ -47,7 +47,7 @@ public class ArticleListActivity extends AppCompatActivity implements
     // COMPLETED: Save this position on SavedInstanceState
     // Holds the current item position to be shared between the grid Layout and the Pager Activity
     public static int currentPosition;
-    private static final String KEY_CURRENT_POSITION = "current_position";
+    public static final String KEY_CURRENT_POSITION = "current_position";
 
     private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -62,7 +62,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_article_list);
 
         // COMPLETED: Set the Exit Shared Element with the callback
-        // It should be added before adding content!!!
         if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.LOLLIPOP) {
             prepareExitTransitions();
         }
@@ -81,7 +80,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         if (savedInstanceState == null) {
             refresh();
         } else {
-            // Save the current position upon rotation
+            // COMPLETED: Save the current position upon rotation
             currentPosition = savedInstanceState.getInt(KEY_CURRENT_POSITION, 0);
         }
 
@@ -174,7 +173,6 @@ public class ArticleListActivity extends AppCompatActivity implements
                     new SharedElementCallback() {
                         @Override
                         public void onMapSharedElements(List<String> names, Map<String, View> sharedElements) {
-                            // TODO: Need to adjust that adapter's current position
                             RecyclerView.ViewHolder selectedViewHolder =
                                     mRecyclerView.findViewHolderForAdapterPosition(currentPosition);
 

@@ -1,26 +1,18 @@
 package com.example.xyzreader.ui;
 
 // COMPLETED: Add the support library for all Fragment and Loader's classes for backward compatibility
-import android.os.Build;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
 import android.content.Intent;
-import android.support.v4.content.Loader;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
+import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
-import android.support.v7.graphics.Palette;
+import android.support.v4.content.Loader;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
@@ -31,12 +23,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 /**
  * A fragment representing a single Article detail screen. This fragment is
@@ -49,7 +44,6 @@ public class ArticleDetailFragment extends Fragment implements
     private static final String TAG = "ArticleDetailFragment";
 
     public static final String TRANSITION_NAME  = "transition";
-
     public static final String ARG_ITEM_ID = "item_id";
     private static final float PARALLAX_FACTOR = 1.25f;
 
@@ -62,8 +56,11 @@ public class ArticleDetailFragment extends Fragment implements
     private ColorDrawable mStatusBarColorDrawable;
 
     private int mTopInset;
+    private FloatingActionButton mFab;
     private View mPhotoContainerView;
     private ImageView mPhotoView;
+    private String mTransitionName;
+
     private int mScrollY;
     private boolean mIsCard = false;
     private int mStatusBarFullOpacityBottom;
@@ -84,6 +81,7 @@ public class ArticleDetailFragment extends Fragment implements
     public static ArticleDetailFragment newInstance(long itemId, String transitionName) {
         Bundle arguments = new Bundle();
         arguments.putLong(ARG_ITEM_ID, itemId);
+        // COMPLETED: Put the transition name as an argument too
         arguments.putString(TRANSITION_NAME, transitionName);
         ArticleDetailFragment fragment = new ArticleDetailFragment();
         fragment.setArguments(arguments);
@@ -98,8 +96,9 @@ public class ArticleDetailFragment extends Fragment implements
             mItemId = getArguments().getLong(ARG_ITEM_ID);
         }
 
+        // COMPLETED: Get the transition name
         if (getArguments().containsKey(TRANSITION_NAME)) {
-            String transition = getArguments().getString(TRANSITION_NAME);
+            mTransitionName = getArguments().getString(TRANSITION_NAME);
         }
 
         mIsCard = getResources().getBoolean(R.bool.detail_is_card);
@@ -127,34 +126,41 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-        mDrawInsetsFrameLayout = mRootView.findViewById(R.id.draw_insets_frame_layout);
-        mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
+        //mDrawInsetsFrameLayout = mRootView.findViewById(R.id.draw_insets_frame_layout);
+
+        /*mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
             @Override
             public void onInsetsChanged(Rect insets) {
                 mTopInset = insets.top;
             }
-        });
+        });*/
 
-        mScrollView = mRootView.findViewById(R.id.scrollview);
+        //mScrollView = mRootView.findViewById(R.id.scrollview);
 
         //TODO: Check if I need this method
-        mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
+        /*mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
             @Override
             public void onScrollChanged() {
                 mScrollY = mScrollView.getScrollY();
                 getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
                 mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
-                updateStatusBar();
+                //updateStatusBar();
             }
-        });
+        });*/
+
+
+        //mStatusBarColorDrawable = new ColorDrawable(0);
 
         mPhotoView = mRootView.findViewById(R.id.photo);
-        mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
 
-        mStatusBarColorDrawable = new ColorDrawable(0);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mPhotoView.setTransitionName(mTransitionName);
+            Log.d(TAG, "Received transition name: " + mTransitionName);
+        }
 
-        //TODO: Check if I need this method
-        mRootView.findViewById(R.id.share_fab).setOnClickListener(new View.OnClickListener() {
+        // COMPLETED: Move the FAB button in the activity
+        mFab = mRootView.findViewById(R.id.share_fab);
+        mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivity(Intent.createChooser(ShareCompat.IntentBuilder.from(getActivity())
@@ -165,12 +171,12 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
         bindViews();
-        updateStatusBar();
+        //updateStatusBar();
         return mRootView;
     }
 
     //TODO: Check if I need this method
-    private void updateStatusBar() {
+    /*private void updateStatusBar() {
         int color = 0;
         if (mPhotoView != null && mTopInset != 0 && mScrollY > 0) {
             float f = progress(mScrollY,
@@ -183,7 +189,7 @@ public class ArticleDetailFragment extends Fragment implements
         }
         mStatusBarColorDrawable.setColor(color);
         mDrawInsetsFrameLayout.setInsetBackground(mStatusBarColorDrawable);
-    }
+    }*/
 
     static float progress(float v, float min, float max) {
         return constrain((v - min) / (max - min), 0, 1);
@@ -215,11 +221,11 @@ public class ArticleDetailFragment extends Fragment implements
             return;
         }
 
+        CollapsingToolbarLayout collapsingToolbarLayout = mRootView.findViewById(R.id.collapsing_layout_detail);
         TextView titleView = mRootView.findViewById(R.id.article_title);
         TextView bylineView = mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView = mRootView.findViewById(R.id.article_body);
-
 
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
@@ -228,7 +234,10 @@ public class ArticleDetailFragment extends Fragment implements
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
 
-            titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+            String title = mCursor.getString(ArticleLoader.Query.TITLE);
+            collapsingToolbarLayout.setTitle(title);
+            titleView.setText(title);
+
 
             Date publishedDate = parsePublishedDate();
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
@@ -258,14 +267,18 @@ public class ArticleDetailFragment extends Fragment implements
                     .replaceAll("\r\n\r\n", "<br /><br />")
                     .replaceAll("\r\n", " ")));
 
+            Log.d(TAG, "Body text: " + bodyView);
+
 //            bodyView.setText(Html.fromHtml(mCursor
 //                    .getString(ArticleLoader.Query.BODY)
 //                    .replaceAll("(\r\n|\n)", "<br />")));
 
-            // COMPLETED: Handle the image loading with Picasso instead of the ImageLoaderHelper
+            // COMPLETED: Set the transition name
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mPhotoView.setTransitionName(titleView.getText().toString());
             }
+
+            // COMPLETED: Handle the image loading with Picasso instead of the ImageLoaderHelper
             Picasso.get()
                     .load(mCursor.getString(ArticleLoader.Query.PHOTO_URL))
                     .placeholder(R.drawable.empty_detail)

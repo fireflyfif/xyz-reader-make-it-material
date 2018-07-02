@@ -6,7 +6,9 @@
 
     <dimen name="fab_elevation">2dp</dimen>
     <dimen name="fab_press_translation_z">6dp</dimen>
-    <dimen name="fab_margin">24dp</dimen>
-    <dimen name="photo_height">150dp</dimen>
+    <dimen name="fab_margin">12dp</dimen>
+    <dimen name="photo_height">250dp</dimen>
+    <dimen name="overlapTop_layout">78dp</dimen>
+    <dimen name="logo_padding">8dp</dimen>
 
 </resources>
