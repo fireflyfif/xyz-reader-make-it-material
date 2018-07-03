@@ -1,7 +1,6 @@
 package com.example.xyzreader.adapters;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -19,11 +18,12 @@ import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.text.format.DateUtils;
-import android.transition.TransitionSet;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -47,7 +47,6 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
     private static final String TAG = ArticlesAdapter.class.getSimpleName();
 
     private static final String TRANSITION_NAME = "transition";
-    private static final String PHOTO_URL_EXTRA = "photo_url";
 
     private int mMutedColor = 0xFF333333;
 
@@ -59,6 +58,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
 
     private Cursor mCursor;
     private Context mContext;
+    private int mLastPosition = -1;
 
     /**
      * COMPLETED: Add a listener that is attached to all ViewHolders to handle image loading events and clicks
@@ -81,7 +81,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
 
         // COMPLETED: Added
         mRequestManager = Picasso.get();
-        mViewHolderListener = new ViewHolderListenerImplementation((AppCompatActivity) context);
+        mViewHolderListener = new ViewHolderListenerImplementation((AppCompatActivity) mContext);
     }
 
     @Override
@@ -114,7 +114,9 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
     public void onBindViewHolder(@NonNull final ArticlesViewHolder holder, final int position) {
 
         mCursor.moveToPosition(position);
-        holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
+        String title = mCursor.getString(ArticleLoader.Query.TITLE);
+
+        holder.titleView.setText(title);
 
         Date publishedDate = parsePublishedDate();
         if (!publishedDate.before(START_OF_EPOCH.getTime())) {
@@ -153,6 +155,9 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
                        int generatedColor = palette.getMutedColor(mMutedColor);
 
                        holder.cardView.setCardBackgroundColor(generatedColor);
+
+                       // COMPLETED: Set the Item Animator here
+                        setItemAnimator(holder.itemView, position);
                     }
 
                     @Override
@@ -161,13 +166,27 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
                     }
                 });
 
-        ViewCompat.setTransitionName(holder.thumbnailView,
-                TRANSITION_NAME + holder.getAdapterPosition());
+        // COMPLETED: Set the Transition name to the title of the article
+        ViewCompat.setTransitionName(holder.thumbnailView, title);
 
-        Log.d(TAG, "Transition name: " + TRANSITION_NAME + holder.getAdapterPosition());
+        Log.d(TAG, "Transition name: " + title);
         Log.d(TAG, "Image url: " + mCursor.getString(ArticleLoader.Query.THUMB_URL));
     }
 
+    /**
+     * COMPLETED: Method for animating the RecyclerView Items
+     * resource: https://stackoverflow.com/a/26748274/8132331
+     * @param view that is being animated
+     * @param position get the position of the item
+     */
+    private void setItemAnimator(View view, int position) {
+        if (position > mLastPosition) {
+            Animation animation = AnimationUtils.loadAnimation(mContext,
+                    android.R.anim.slide_in_left);
+            view.startAnimation(animation);
+            mLastPosition = position;
+        }
+    }
 
     @Override
     public int getItemCount() {
@@ -182,18 +201,33 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
 
         Intent intent = new Intent(Intent.ACTION_VIEW, itemIdUri);
         intent.putExtra(TRANSITION_NAME, ViewCompat.getTransitionName(thumbnail));
-        intent.putExtra(ArticleListActivity.KEY_CURRENT_POSITION, ArticleListActivity.currentPosition);
-        intent.putExtra(PHOTO_URL_EXTRA, photoUrl);
 
         Activity activity = (Activity) mContext;
-        ActivityOptionsCompat options = ActivityOptionsCompat
-                .makeSceneTransitionAnimation(
-                        activity,
-                        thumbnail,
-                        ViewCompat.getTransitionName(thumbnail));
 
-        ActivityCompat.startActivity(activity, intent, options.toBundle());
-        //activity.startActivity(intent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            ActivityOptionsCompat options = ActivityOptionsCompat
+                    .makeSceneTransitionAnimation(
+                            activity,
+                            thumbnail,
+                            ViewCompat.getTransitionName(thumbnail));
+
+            Log.d(TAG, "Transition name: " + ViewCompat.getTransitionName(thumbnail));
+
+            ActivityCompat.startActivity(activity, intent, options.toBundle());
+        } else {
+            activity.startActivity(intent);
+        }
+    }
+
+    /**
+     * COMPLETED:
+     * Clear the animation on detach to avoid problems with fast scrolling
+     *
+     * @param holder of the current custom Adapter
+     */
+    @Override
+    public void onViewDetachedFromWindow(@NonNull ArticlesViewHolder holder) {
+        (holder).clearAnimation();
     }
 
     /**
@@ -242,7 +276,7 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
     }
 
     public class ArticlesViewHolder extends RecyclerView.ViewHolder implements
-            View.OnClickListener{
+            View.OnClickListener {
 
         private ImageView thumbnailView;
         private TextView titleView;
@@ -267,7 +301,16 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.Articl
         @Override
         public void onClick(View v) {
             viewHolderListener.onItemClicked(v, getAdapterPosition());
-
         }
+
+        public void clearAnimation() {
+            itemView.clearAnimation();
+        }
+    }
+
+    // COMPLETED: Swap the cursor
+    public void swapCursor(Cursor cursor) {
+        mCursor = cursor;
+        notifyDataSetChanged();
     }
 }

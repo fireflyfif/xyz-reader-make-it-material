@@ -39,9 +39,6 @@ public class ArticleDetailActivity extends AppCompatActivity
     private Cursor mCursor;
     private long mStartId;
 
-    private static final String TRANSITION_NAME = "transition";
-    private static final String PHOTO_URL_EXTRA = "photo_url";
-
     private long mSelectedItemId;
     private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
 
@@ -58,25 +55,45 @@ public class ArticleDetailActivity extends AppCompatActivity
             getWindow().getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                             View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-            //getWindow().setEnterTransition(null);
         }
 
         // COMPLETED: First postpone the enter transition, then set it
-        supportPostponeEnterTransition();
         ActivityCompat.postponeEnterTransition(this);
 
         setContentView(R.layout.activity_article_detail);
 
         getSupportLoaderManager().initLoader(0, null, this);
 
+        // COMPLETED: Set the Toolbar first
         mToolbar = findViewById(R.id.toolbar_detail_activity);
         setSupportActionBar(mToolbar);
 
+        // COMPLETED: Set the Up Button correctly
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            // Hide the title on the ActionBar
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
-        // TODO: Move this in a separate method
+        // COMPLETED: Set the View Pager
+        setViewPager();
+
+        if (savedInstanceState == null) {
+            if (getIntent() != null && getIntent().getData() != null) {
+                mStartId = ItemsContract.Items.getItemId(getIntent().getData());
+                mSelectedItemId = mStartId;
+            }
+
+            // COMPLETED: Avoid a postponeEnterTransition on orientation change
+            ActivityCompat.postponeEnterTransition(this);
+        }
+    }
+
+    /*
+    COMPLETED: Method for setting the View Pager
+     */
+    private void setViewPager() {
+
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
         mPager = findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
@@ -89,9 +106,7 @@ public class ArticleDetailActivity extends AppCompatActivity
 
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-//                mUpButton.animate()
-//                        .alpha((position == ViewPager.SCROLL_STATE_IDLE) ? 1f : 0f)
-//                        .setDuration(300);
+
             }
 
             @Override
@@ -103,7 +118,6 @@ public class ArticleDetailActivity extends AppCompatActivity
                     mCursor.moveToPosition(position);
                 }
                 mSelectedItemId = mCursor.getLong(ArticleLoader.Query._ID);
-                //updateUpButtonPosition();
             }
 
             @Override
@@ -111,20 +125,6 @@ public class ArticleDetailActivity extends AppCompatActivity
 
             }
         });
-
-        // COMPLETED: Prepare the Shared Element Transition
-        prepareSharedElementTransition();
-
-
-        if (savedInstanceState == null) {
-            if (getIntent() != null && getIntent().getData() != null) {
-                mStartId = ItemsContract.Items.getItemId(getIntent().getData());
-                mSelectedItemId = mStartId;
-            }
-
-            // COMPLETED: Avoid a postponeEnterTransition on orientation change
-            ActivityCompat.postponeEnterTransition(this);
-        }
     }
 
 
@@ -160,18 +160,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPagerAdapter.notifyDataSetChanged();
     }
 
-    /*public void onUpButtonFloorChanged(long itemId, ArticleDetailFragment fragment) {
-        if (itemId == mSelectedItemId) {
-            mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
-            updateUpButtonPosition();
-        }
-    }*/
-
-    /*private void updateUpButtonPosition() {
-        int upButtonNormalBottom = mTopInset + mUpButton.getHeight();
-        mUpButton.setTranslationY(Math.min(mSelectedItemUpButtonFloor - upButtonNormalBottom, 0));
-    }*/
-
     /**
      * ViewPager Adapter Class
      */
@@ -187,7 +175,6 @@ public class ArticleDetailActivity extends AppCompatActivity
             ArticleDetailFragment fragment = (ArticleDetailFragment) object;
             if (fragment != null) {
                 mSelectedItemUpButtonFloor = fragment.getUpButtonFloor();
-                //updateUpButtonPosition();
             }
         }
 
@@ -212,8 +199,9 @@ public class ArticleDetailActivity extends AppCompatActivity
     }
 
     /**
+     * TODO: Remove if not in use
      * Method for getting the Shared Element ready for Transition
-     *
+     * Currently not in use, because I decided to go with another approach
      * source: https://android-developers.googleblog.com/2018/02/continuous-shared-element-transitions.html
      */
     private void prepareSharedElementTransition() {

@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -99,6 +100,7 @@ public class ArticleDetailFragment extends Fragment implements
         // COMPLETED: Get the transition name
         if (getArguments().containsKey(TRANSITION_NAME)) {
             mTransitionName = getArguments().getString(TRANSITION_NAME);
+            Log.d(TAG, "Received transition name: " + mTransitionName);
         }
 
         mIsCard = getResources().getBoolean(R.bool.detail_is_card);
@@ -107,9 +109,6 @@ public class ArticleDetailFragment extends Fragment implements
         setHasOptionsMenu(true);
     }
 
-    public ArticleDetailActivity getActivityCast() {
-        return (ArticleDetailActivity) getActivity();
-    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -126,37 +125,8 @@ public class ArticleDetailFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
-        //mDrawInsetsFrameLayout = mRootView.findViewById(R.id.draw_insets_frame_layout);
-
-        /*mDrawInsetsFrameLayout.setOnInsetsCallback(new DrawInsetsFrameLayout.OnInsetsCallback() {
-            @Override
-            public void onInsetsChanged(Rect insets) {
-                mTopInset = insets.top;
-            }
-        });*/
-
-        //mScrollView = mRootView.findViewById(R.id.scrollview);
-
-        //TODO: Check if I need this method
-        /*mScrollView.setCallbacks(new ObservableScrollView.Callbacks() {
-            @Override
-            public void onScrollChanged() {
-                mScrollY = mScrollView.getScrollY();
-                getActivityCast().onUpButtonFloorChanged(mItemId, ArticleDetailFragment.this);
-                mPhotoContainerView.setTranslationY((int) (mScrollY - mScrollY / PARALLAX_FACTOR));
-                //updateStatusBar();
-            }
-        });*/
-
-
-        //mStatusBarColorDrawable = new ColorDrawable(0);
 
         mPhotoView = mRootView.findViewById(R.id.photo);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mPhotoView.setTransitionName(mTransitionName);
-            Log.d(TAG, "Received transition name: " + mTransitionName);
-        }
 
         // COMPLETED: Move the FAB button in the activity
         mFab = mRootView.findViewById(R.id.share_fab);
@@ -171,38 +141,8 @@ public class ArticleDetailFragment extends Fragment implements
         });
 
         bindViews();
-        //updateStatusBar();
+
         return mRootView;
-    }
-
-    //TODO: Check if I need this method
-    /*private void updateStatusBar() {
-        int color = 0;
-        if (mPhotoView != null && mTopInset != 0 && mScrollY > 0) {
-            float f = progress(mScrollY,
-                    mStatusBarFullOpacityBottom - mTopInset * 3,
-                    mStatusBarFullOpacityBottom - mTopInset);
-            color = Color.argb((int) (255 * f),
-                    (int) (Color.red(mMutedColor) * 0.9),
-                    (int) (Color.green(mMutedColor) * 0.9),
-                    (int) (Color.blue(mMutedColor) * 0.9));
-        }
-        mStatusBarColorDrawable.setColor(color);
-        mDrawInsetsFrameLayout.setInsetBackground(mStatusBarColorDrawable);
-    }*/
-
-    static float progress(float v, float min, float max) {
-        return constrain((v - min) / (max - min), 0, 1);
-    }
-
-    static float constrain(float val, float min, float max) {
-        if (val < min) {
-            return min;
-        } else if (val > max) {
-            return max;
-        } else {
-            return val;
-        }
     }
 
     private Date parsePublishedDate() {
@@ -237,7 +177,6 @@ public class ArticleDetailFragment extends Fragment implements
             String title = mCursor.getString(ArticleLoader.Query.TITLE);
             collapsingToolbarLayout.setTitle(title);
             titleView.setText(title);
-
 
             Date publishedDate = parsePublishedDate();
             if (!publishedDate.before(START_OF_EPOCH.getTime())) {
@@ -280,15 +219,16 @@ public class ArticleDetailFragment extends Fragment implements
 
             // COMPLETED: Handle the image loading with Picasso instead of the ImageLoaderHelper
             Picasso.get()
-                    .load(mCursor.getString(ArticleLoader.Query.PHOTO_URL))
+                    .load(mCursor.getString(ArticleLoader.Query.THUMB_URL))
                     .placeholder(R.drawable.empty_detail)
                     .error(R.drawable.empty_detail)
                     .into(mPhotoView, new Callback() {
                         @Override
                         public void onSuccess() {
-                            if (getActivity() != null) {
-                                getActivity().supportStartPostponedEnterTransition();
-                            }
+                            // COMPLETED: Schedule the Enter Transition here
+                            scheduleEnterTransition(mPhotoView);
+
+                            // TODO: Add the Palette method for generating the color background
                         }
 
                         @Override
@@ -326,6 +266,24 @@ public class ArticleDetailFragment extends Fragment implements
             bylineView.setText("N/A" );
             bodyView.setText("N/A");
         }
+    }
+
+    private void scheduleEnterTransition(View sharedView) {
+        sharedView.getViewTreeObserver().addOnPreDrawListener(
+                new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        sharedView.getViewTreeObserver().removeOnPreDrawListener(this);
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            if (getActivity() != null) {
+                                getActivity().supportStartPostponedEnterTransition();
+                            }
+                        }
+                        return true;
+                    }
+                }
+        );
     }
 
     @Override
