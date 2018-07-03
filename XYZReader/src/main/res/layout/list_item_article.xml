@@ -32,6 +32,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
+            android:fontFamily="sans-serif-condensed"
             android:maxLines="4"
             android:paddingBottom="@dimen/title_paddingBottom"
             android:paddingLeft="@dimen/title_padding"
