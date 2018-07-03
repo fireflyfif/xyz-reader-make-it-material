@@ -1,6 +1,6 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/coordinator_layout_detail"
+    android:id="@+id/coordinator_layout_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
@@ -70,17 +70,19 @@
                 android:id="@+id/card_view_detail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:layout_marginBottom="@dimen/card_marginBottom"
+                android:layout_marginEnd="@dimen/card_margins"
+                android:layout_marginStart="@dimen/card_margins"
+                android:layout_marginTop="@dimen/card_margins"
                 app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="5dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="@dimen/card_corner_radius"
+                app:cardElevation="@dimen/card_elevation">
 
                 <com.example.xyzreader.ui.MaxWidthLinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_gravity="center_horizontal"
                     android:background="#fff"
-                    android:elevation="2dp"
                     android:maxWidth="@dimen/detail_card_max_width"
                     android:orientation="vertical">
 
@@ -130,6 +132,18 @@
                         android:textColorLink="@color/theme_accent"
                         android:textSize="@dimen/detail_body_text_size" />
 
+                    <TextView
+                        android:id="@+id/read_more_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginLeft="@dimen/detail_inner_horiz_margin"
+                        android:layout_marginRight="@dimen/detail_inner_horiz_margin"
+                        android:paddingBottom="@dimen/readMore_paddingBottom"
+                        android:text="@string/read_more_text"
+                        android:textColor="@color/theme_second_accent"
+                        android:textSize="@dimen/detail_body_text_size"/>
+
                 </com.example.xyzreader.ui.MaxWidthLinearLayout>
 
             </android.support.v7.widget.CardView>
@@ -138,6 +152,7 @@
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/share_fab"
+        co="@color/theme_second_accent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right|end"
@@ -146,9 +161,9 @@
         android:background="@drawable/add_fab_background"
         android:contentDescription="@string/action_share"
         android:elevation="@dimen/fab_elevation"
-        android:src="@drawable/ic_share"
+        android:src="@drawable/ic_share_24dp"
         android:stateListAnimator="@animator/fab_state_list_anim"
         app:fabSize="normal"
-        app:pressedTranslationZ="12dp" />
+        app:pressedTranslationZ="@dimen/fab_pressed_transition" />
 
 </android.support.design.widget.CoordinatorLayout>

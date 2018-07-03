@@ -10,5 +10,11 @@
     <dimen name="photo_height">250dp</dimen>
     <dimen name="overlapTop_layout">78dp</dimen>
     <dimen name="logo_padding">8dp</dimen>
+    <dimen name="readMore_paddingBottom">16dp</dimen>
+    <dimen name="card_corner_radius">5dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="card_marginBottom">24dp</dimen>
+    <dimen name="card_margins">8dp</dimen>
+    <dimen name="fab_pressed_transition">12dp</dimen>
 
 </resources>

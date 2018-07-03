@@ -3,8 +3,9 @@ package com.example.xyzreader.ui;
 // COMPLETED: Add the support library for all Fragment and Loader's classes for backward compatibility
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
@@ -13,6 +14,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.content.Loader;
+import android.support.v7.graphics.Palette;
 import android.text.Html;
 import android.text.format.DateUtils;
 import android.text.method.LinkMovementMethod;
@@ -22,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.xyzreader.R;
@@ -52,13 +55,10 @@ public class ArticleDetailFragment extends Fragment implements
     private long mItemId;
     private View mRootView;
     private int mMutedColor = 0xFF333333;
-    private ObservableScrollView mScrollView;
-    private DrawInsetsFrameLayout mDrawInsetsFrameLayout;
-    private ColorDrawable mStatusBarColorDrawable;
 
-    private int mTopInset;
     private FloatingActionButton mFab;
     private View mPhotoContainerView;
+    private LinearLayout mMetaLayout;
     private ImageView mPhotoView;
     private String mTransitionName;
 
@@ -166,16 +166,20 @@ public class ArticleDetailFragment extends Fragment implements
         TextView bylineView = mRootView.findViewById(R.id.article_byline);
         bylineView.setMovementMethod(new LinkMovementMethod());
         TextView bodyView = mRootView.findViewById(R.id.article_body);
+        TextView readMoreView = mRootView.findViewById(R.id.read_more_tv);
 
         bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+        readMoreView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
 
         if (mCursor != null) {
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
 
+            String bodyArticleText;
+
             String title = mCursor.getString(ArticleLoader.Query.TITLE);
-            collapsingToolbarLayout.setTitle(title);
+            //collapsingToolbarLayout.setTitle(title);
             titleView.setText(title);
 
             Date publishedDate = parsePublishedDate();
@@ -199,36 +203,56 @@ public class ArticleDetailFragment extends Fragment implements
             }
 
             // COMPLETED: Shrink the long String to only 1000 characters
-            // TODO: Add a Read More text so that the user can expand to read the full artcle
-            bodyView.setText(Html.fromHtml(mCursor
-                    .getString(ArticleLoader.Query.BODY)
-                    .substring(0, 1000)
-                    .replaceAll("\r\n\r\n", "<br /><br />")
-                    .replaceAll("\r\n", " ")));
+            bodyArticleText = mCursor.getString(ArticleLoader.Query.BODY)
+                    .replaceAll("(\r\n|\n)", "<br />");
+
+            bodyView.setText(Html.fromHtml(bodyArticleText
+                            .substring(0, 1000)));
 
             Log.d(TAG, "Body text: " + bodyView);
 
-//            bodyView.setText(Html.fromHtml(mCursor
-//                    .getString(ArticleLoader.Query.BODY)
-//                    .replaceAll("(\r\n|\n)", "<br />")));
+            // COMPLETED: Add a Read More text so that the user can expand to read the full article
+            readMoreView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (bodyView.length() < bodyArticleText.length()) {
+                        readMoreView.setText(R.string.read_less_text);
+                    } else {
+                        readMoreView.setText(R.string.read_more_text);
+                    }
 
-            // COMPLETED: Set the transition name
+                    bodyView.setText(Html.fromHtml(bodyArticleText
+                            .replaceAll("(\r\n|\n)", "<br />")));
+                }
+            });
+
+
+            // COMPLETED: Set the transition name of the Shared View
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mPhotoView.setTransitionName(titleView.getText().toString());
             }
 
             // COMPLETED: Handle the image loading with Picasso instead of the ImageLoaderHelper
             Picasso.get()
-                    .load(mCursor.getString(ArticleLoader.Query.THUMB_URL))
+                    .load(mCursor.getString(ArticleLoader.Query.PHOTO_URL))
                     .placeholder(R.drawable.empty_detail)
                     .error(R.drawable.empty_detail)
                     .into(mPhotoView, new Callback() {
                         @Override
                         public void onSuccess() {
+
+                            // COMPLETED: Add the Palette method for generating the color background
+                            Bitmap bitmap = ((BitmapDrawable)
+                                    mPhotoView.getDrawable()).getBitmap();
+                            if (bitmap != null) {
+                                Palette palette = Palette.from(bitmap).generate();
+                                int bgColor = palette.getDarkMutedColor(mMutedColor);
+                                mMetaLayout = mRootView.findViewById(R.id.meta_bar);
+                                mMetaLayout.setBackgroundColor(bgColor);
+                            }
+
                             // COMPLETED: Schedule the Enter Transition here
                             scheduleEnterTransition(mPhotoView);
-
-                            // TODO: Add the Palette method for generating the color background
                         }
 
                         @Override
@@ -238,28 +262,6 @@ public class ArticleDetailFragment extends Fragment implements
                             }
                         }
                     });
-
-            //TODO: Check if I need this method
-            /*ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
-                    .get(mCursor.getString(ArticleLoader.Query.PHOTO_URL), new ImageLoader.ImageListener() {
-                        @Override
-                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                            Bitmap bitmap = imageContainer.getBitmap();
-                            if (bitmap != null) {
-                                Palette p = Palette.generate(bitmap, 12);
-                                mMutedColor = p.getDarkMutedColor(0xFF333333);
-                                mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                mRootView.findViewById(R.id.meta_bar)
-                                        .setBackgroundColor(mMutedColor);
-                                updateStatusBar();
-                            }
-                        }
-
-                        @Override
-                        public void onErrorResponse(VolleyError volleyError) {
-
-                        }
-                    });*/
         } else {
             mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
@@ -268,6 +270,10 @@ public class ArticleDetailFragment extends Fragment implements
         }
     }
 
+    /**
+     * COMPLETED: Method for scheduling the Enter Transition
+     * @param sharedView the View that will be used for the Shared Element Transition
+     */
     private void scheduleEnterTransition(View sharedView) {
         sharedView.getViewTreeObserver().addOnPreDrawListener(
                 new ViewTreeObserver.OnPreDrawListener() {

@@ -9,6 +9,8 @@ import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.app.SharedElementCallback;
 import android.support.v4.content.Loader;
@@ -48,6 +50,7 @@ public class ArticleListActivity extends AppCompatActivity implements
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
     private ArticlesAdapter mArticlesAdapter;
+    private CoordinatorLayout mCoordinatorLayout;
 
 
     @Override
@@ -85,6 +88,7 @@ public class ArticleListActivity extends AppCompatActivity implements
      * COMPLETED: Set a listener to the Swipe Refresh Layout
      */
     private void swipeToRefresh() {
+
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -125,6 +129,10 @@ public class ArticleListActivity extends AppCompatActivity implements
     };
 
     private void updateRefreshingUI() {
+        // COMPLETED: Add a Snackbar to show the user a message
+        mCoordinatorLayout = findViewById(R.id.coordinator_layout);
+        Snackbar.make(mCoordinatorLayout, "Your list is freshly updated!", Snackbar.LENGTH_SHORT).show();
+
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
     }
 

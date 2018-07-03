@@ -8,6 +8,7 @@
     <string name="action_share">Share</string>
 
     <string name="up">Up</string>
-    <string name="transition_image">transition_animation</string>
+    <string name="read_more_text">Read more</string>
+    <string name="read_less_text">Read less</string>
 
 </resources>
