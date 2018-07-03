@@ -168,9 +168,6 @@ public class ArticleDetailFragment extends Fragment implements
         TextView bodyView = mRootView.findViewById(R.id.article_body);
         TextView readMoreView = mRootView.findViewById(R.id.read_more_tv);
 
-        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
-        readMoreView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
-
         if (mCursor != null) {
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);

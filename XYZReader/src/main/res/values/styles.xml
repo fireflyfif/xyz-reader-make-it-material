@@ -34,4 +34,34 @@
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
 
+    <!-- Style of the MaxWidthLinearLayout. -->
+    <style name="MaxWidthLayout" parent="Base.ThemeOverlay.AppCompat">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_gravity">center_horizontal</item>
+    </style>
+
+    <!-- Style of the Card View that holds the Article. -->
+    <style name="cardViewArticle" parent="Base.ThemeOverlay.AppCompat">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">@dimen/card_marginBottom</item>
+        <item name="android:layout_marginTop">@dimen/card_margins</item>
+        <item name="android:layout_marginStart">@dimen/card_margins</item>
+        <item name="android:layout_marginEnd">@dimen/card_margins</item>
+    </style>
+
+    <!-- Style of the Meta Bar Layout that holds the Article title and subtitle. -->
+    <style name="metaBarLayout" parent="Base.ThemeOverlay.AppCompat">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">top</item>
+        <item name="android:layout_marginBottom">@dimen/detail_metabar_vert_padding</item>
+        <item name="android:paddingBottom">@dimen/detail_metabar_vert_padding</item>
+        <item name="android:paddingTop">@dimen/detail_metabar_vert_padding</item>
+        <item name="android:paddingLeft">@dimen/detail_inner_horiz_margin</item>
+        <item name="android:paddingRight">@dimen/detail_inner_horiz_margin</item>
+        <item name="android:background">#333</item>
+    </style>
+
 </resources>

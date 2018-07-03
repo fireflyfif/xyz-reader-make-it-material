@@ -60,44 +60,27 @@
         <com.example.xyzreader.ui.MaxWidthLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             android:id="@+id/linear_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_horizontal"
+            style="@style/MaxWidthLayout"
             android:maxWidth="@dimen/detail_card_max_width"
             android:orientation="vertical">
 
             <android.support.v7.widget.CardView
                 android:id="@+id/card_view_detail"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/card_marginBottom"
-                android:layout_marginEnd="@dimen/card_margins"
-                android:layout_marginStart="@dimen/card_margins"
-                android:layout_marginTop="@dimen/card_margins"
+                style="@style/cardViewArticle"
                 app:cardBackgroundColor="@android:color/white"
                 app:cardCornerRadius="@dimen/card_corner_radius"
                 app:cardElevation="@dimen/card_elevation">
 
                 <com.example.xyzreader.ui.MaxWidthLinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_gravity="center_horizontal"
+                    style="@style/MaxWidthLayout"
                     android:background="#fff"
                     android:maxWidth="@dimen/detail_card_max_width"
                     android:orientation="vertical">
 
                     <LinearLayout
                         android:id="@+id/meta_bar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="top"
-                        android:layout_marginBottom="@dimen/detail_metabar_vert_padding"
-                        android:background="#333"
-                        android:orientation="vertical"
-                        android:paddingBottom="@dimen/detail_metabar_vert_padding"
-                        android:paddingLeft="@dimen/detail_inner_horiz_margin"
-                        android:paddingRight="@dimen/detail_inner_horiz_margin"
-                        android:paddingTop="@dimen/detail_metabar_vert_padding">
+                        style="@style/metaBarLayout"
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/article_title"
@@ -116,7 +99,9 @@
                             style="?android:attr/textAppearanceSmall"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif-condensed"
                             android:textColor="#8fff" />
+
                     </LinearLayout>
 
                     <TextView
@@ -126,6 +111,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/detail_inner_horiz_margin"
                         android:layout_marginRight="@dimen/detail_inner_horiz_margin"
+                        android:fontFamily="sans-serif"
                         android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
                         android:paddingBottom="@dimen/detail_body_bottom_margin"
                         android:textColor="@color/theme_primary_dark"
@@ -139,10 +125,11 @@
                         android:layout_gravity="center_horizontal"
                         android:layout_marginLeft="@dimen/detail_inner_horiz_margin"
                         android:layout_marginRight="@dimen/detail_inner_horiz_margin"
+                        android:fontFamily="sans-serif"
                         android:paddingBottom="@dimen/readMore_paddingBottom"
                         android:text="@string/read_more_text"
                         android:textColor="@color/theme_second_accent"
-                        android:textSize="@dimen/detail_body_text_size"/>
+                        android:textSize="@dimen/detail_body_text_size" />
 
                 </com.example.xyzreader.ui.MaxWidthLinearLayout>
 

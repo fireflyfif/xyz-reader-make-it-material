@@ -16,5 +16,10 @@
     <dimen name="card_marginBottom">24dp</dimen>
     <dimen name="card_margins">8dp</dimen>
     <dimen name="fab_pressed_transition">12dp</dimen>
+    <dimen name="card_view_margin">4dp</dimen>
+    <dimen name="thumbnail_height">100dp</dimen>
+    <dimen name="title_padding">16dp</dimen>
+    <dimen name="title_paddingBottom">4dp</dimen>
+    <dimen name="subtitle_padding">16dp</dimen>
 
 </resources>
