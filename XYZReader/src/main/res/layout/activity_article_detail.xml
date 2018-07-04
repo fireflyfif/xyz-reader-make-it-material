@@ -9,13 +9,16 @@
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
+    <!-- This theme makes the Up Home Button
+     white android:theme="@style/Theme.AppCompat.NoActionBar" -->
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar_detail_activity"
         android:layout_width="match_parent"
         android:layout_height="?android:actionBarSize"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:theme="@style/Theme.AppCompat.NoActionBar"
         app:layout_collapseMode="pin"
         app:layout_scrollFlags="scroll|enterAlways" />
 

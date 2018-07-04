@@ -51,6 +51,6 @@
             android:paddingLeft="@dimen/subtitle_padding"
             android:paddingRight="@dimen/subtitle_padding"
             android:textColor="#6000" />
-    </LinearLayout>
 
+    </LinearLayout>
 </android.support.v7.widget.CardView>
